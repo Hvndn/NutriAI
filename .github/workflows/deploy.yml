@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 jobs:
   build-and-test-backend:
@@ -58,7 +60,7 @@ jobs:
   deploy-to-railway:
     name: Auto Deploy to Railway Cloud
     needs: [build-and-test-backend, build-frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
