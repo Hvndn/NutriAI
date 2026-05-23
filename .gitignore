@@ -1,0 +1,68 @@
+# OS files
+.DS_Store
+Thumbs.db
+db.sqlite3
+*.db
+
+# Backend (Python / FastAPI)
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/*$py.class
+backend/.venv/
+backend/venv/
+backend/ENV/
+backend/env/
+backend/.env
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/.ipynb_checkpoints/
+
+# Frontend Web (Next.js / Node)
+frontend-web/node_modules/
+frontend-web/.next/
+frontend-web/out/
+frontend-web/build/
+frontend-web/dist/
+frontend-web/.env
+frontend-web/.env.local
+frontend-web/.env.development.local
+frontend-web/.env.test.local
+frontend-web/.env.production.local
+frontend-web/npm-debug.log*
+frontend-web/yarn-debug.log*
+frontend-web/yarn-error.log*
+frontend-web/.pnpm-debug.log*
+
+# Frontend Mobile (Flutter)
+frontend-mobile/.dart_tool/
+frontend-mobile/.packages
+frontend-mobile/.flutter-plugins
+frontend-mobile/.flutter-plugins-dependencies
+frontend-mobile/.pub-cache/
+frontend-mobile/.pub/
+frontend-mobile/build/
+frontend-mobile/android/**/*.iml
+frontend-mobile/android/.gradle/
+frontend-mobile/ios/.generated/
+frontend-mobile/ios/Flutter/flutter_export_environment.sh
+frontend-mobile/ios/Flutter/Generated.xcconfig
+frontend-mobile/ios/Flutter/flutter_export_environment.h
+frontend-mobile/lib/generated/
+
+# Docker & Infrastructure
+.docker/
+docker-compose.override.yml
+*.log
+data/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.agent/
+GEM
