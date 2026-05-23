@@ -69,6 +69,7 @@ interface AppState {
   fetchHistory: (search?: string) => Promise<void>;
   fetchAdminStats: () => Promise<void>;
   uploadAndAnalyzeImage: (file: File) => Promise<Scan | null>;
+  uploadAndOcrPackaging: (file: File) => Promise<any | null>;
   updateDailyGoal: (goal: number) => Promise<void>;
   deleteScan: (id: number) => Promise<void>;
   setLanguage: (lang: 'vi' | 'en') => void;
@@ -193,6 +194,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ 
         isLoading: false, 
         error: err.response?.data?.detail || 'Lỗi phân tích hình ảnh thực phẩm.' 
+      });
+      return null;
+    }
+  },
+
+  uploadAndOcrPackaging: async (file) => {
+    set({ isLoading: true, error: null });
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await api.post('/scans/ocr', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      set({ isLoading: false });
+      return response.data;
+    } catch (err: any) {
+      set({ 
+        isLoading: false, 
+        error: err.response?.data?.detail || 'Lỗi phân tích bao bì sản phẩm.' 
       });
       return null;
     }

@@ -3,6 +3,7 @@
 Thumbs.db
 db.sqlite3
 *.db
+.env
 
 # Backend (Python / FastAPI)
 backend/__pycache__/
