@@ -33,7 +33,7 @@ async def analyze_food(
     contents = await file.read()
     
     # Phân tích ảnh món ăn bằng AI Service
-    ai_result = await AIService.analyze_food_image(contents, file.filename)
+    ai_result = await AIService.analyze_food_image(contents, file.filename, file.content_type)
     
     # Tạo bản ghi Scan mới trong database
     # Sử dụng mockup URL hình ảnh để demo mượt mà (hoặc lưu base64)

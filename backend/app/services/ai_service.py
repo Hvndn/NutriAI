@@ -82,11 +82,12 @@ class AIService:
         }
 
     @classmethod
-    async def analyze_food_image(cls, image_bytes: bytes, filename: str = "") -> Dict[str, Any]:
+    async def analyze_food_image(cls, image_bytes: bytes, filename: str = "", mime_type: str = "image/jpeg") -> Dict[str, Any]:
         """Phân tích ảnh món ăn bằng Gemini Vision API, tự động fallback sang mock data nếu không có key hoặc lỗi."""
         
         if not settings.GEMINI_API_KEY:
             # Không cấu hình API Key -> Dùng Mock
+            print("WARNING: GEMINI_API_KEY is not configured! Using Smart Mock Data fallback.")
             return cls.get_mock_nutrition(filename)
 
         # Base64 encode ảnh
@@ -117,6 +118,11 @@ class AIService:
         # Gọi Gemini API 1.5 Flash
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
         
+        # Đồng bộ mimeType
+        valid_mime_types = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]
+        if mime_type not in valid_mime_types:
+            mime_type = "image/jpeg"
+
         payload = {
             "contents": [
                 {
@@ -124,7 +130,7 @@ class AIService:
                         {"text": prompt},
                         {
                             "inlineData": {
-                                "mimeType": "image/jpeg",
+                                "mimeType": mime_type,
                                 "data": base64_image
                             }
                         }
@@ -151,8 +157,13 @@ class AIService:
                     result = json.loads(text_content)
                     return result
                 else:
-                    # Lỗi API -> Fallback
+                    # Lỗi API -> Fallback và In chi tiết lỗi
+                    print(f"ERROR: Gemini API returned status code {response.status_code}")
+                    print(f"Details: {response.text}")
                     return cls.get_mock_nutrition(filename)
-        except Exception:
+        except Exception as e:
             # Bất kỳ ngoại lệ nào khác -> Fallback
+            print(f"EXCEPTION during Gemini API call: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return cls.get_mock_nutrition(filename)
