@@ -70,6 +70,13 @@ public class ScanController {
         return ResponseEntity.ok(tracker);
     }
 
+    @GetMapping("/meal-planner")
+    @Operation(summary = "Lấy gợi ý thực đơn 3 bữa (Sáng, Trưa, Tối) từ chuyên gia AI dựa trên mục tiêu Calo hôm nay")
+    public ResponseEntity<Map<String, Object>> getMealPlan(@AuthenticationPrincipal User currentUser) {
+        Map<String, Object> mealPlan = aiService.generateMealPlan(currentUser.getDailyCalorieGoal());
+        return ResponseEntity.ok(mealPlan);
+    }
+
     @GetMapping("/")
     @Operation(summary = "Lấy lịch sử tất cả các lượt quét món ăn của người dùng hiện tại")
     public ResponseEntity<List<ScanDto>> getHistory(

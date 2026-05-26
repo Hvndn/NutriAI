@@ -243,6 +243,153 @@ public class AiService {
     }
 
     /**
+     * Gợi ý thực đơn ăn uống 3 bữa bằng Gemini
+     */
+    public Map<String, Object> generateMealPlan(int calorieGoal) {
+        if (!StringUtils.hasText(geminiApiKey)) {
+            log.warn("GEMINI_API_KEY is not configured! Falling back to Smart Meal Planner Mock.");
+            return getMockMealPlan(calorieGoal);
+        }
+
+        String prompt = "You are an expert AI Nutritionist. Generate a delicious and highly personalized 3-meal plan (Sáng, Trưa, Tối) for today " +
+                "that fits exactly inside a daily goal of " + calorieGoal + " kcal. " +
+                "IMPORTANT: Your response MUST be a VALID raw JSON object ONLY, with no markdown formatting blocks, " +
+                "no ```json wrapper, no explanation, no text outside the JSON structure. " +
+                "The JSON must have the following structure EXACTLY: " +
+                "{\n" +
+                "  \"daily_calories\": " + calorieGoal + ",\n" +
+                "  \"breakfast\": {\"name\": \"Tên món ăn sáng\", \"calories\": 450.0, \"carbs\": 50.0, \"protein\": 20.0, \"fat\": 10.0, \"description\": \"Mô tả chi tiết cách chế biến & lợi ích sức khỏe bằng tiếng Việt\"},\n" +
+                "  \"lunch\": {\"name\": \"Tên món ăn trưa\", \"calories\": 650.0, \"carbs\": 70.0, \"protein\": 35.0, \"fat\": 15.0, \"description\": \"Mô tả chi tiết cách chế biến & lợi ích sức khỏe bằng tiếng Việt\"},\n" +
+                "  \"dinner\": {\"name\": \"Tên món ăn tối\", \"calories\": 500.0, \"carbs\": 50.0, \"protein\": 30.0, \"fat\": 12.0, \"description\": \"Mô tả chi tiết cách chế biến & lợi ích sức khỏe bằng tiếng Việt\"},\n" +
+                "  \"advice\": \"Lời khuyên dinh dưỡng tổng quan chuyên nghiệp bằng tiếng Việt\"\n" +
+                "}";
+
+        return callGeminiPlain(prompt, () -> getMockMealPlan(calorieGoal));
+    }
+
+    /**
+     * Phân tích tương quan 7 ngày ăn uống và 7 ngày sinh lý bằng Gemini
+     */
+    public Map<String, Object> generateCorrelationInsight(String foodHistoryJson, String healthHistoryJson) {
+        if (!StringUtils.hasText(geminiApiKey)) {
+            log.warn("GEMINI_API_KEY is not configured! Falling back to Smart Correlation Mock.");
+            return getMockCorrelationInsight();
+        }
+
+        String prompt = "You are an expert Clinical Dietitian and AI Health Coach. Analyze these two JSON datasets: " +
+                "Food intake logs for past 7 days: " + foodHistoryJson + " and " +
+                "Health vitals logs (weight, water, steps, sleep) for past 7 days: " + healthHistoryJson + ". " +
+                "Run a comprehensive lifestyle correlation audit. Detect patterns (e.g. how high sodium or calorie spikes affect weight, " +
+                "how low water intake relates to fatigue, how step count correlates to weight loss). " +
+                "Provide a highly intelligent medical-grade report in Vietnamese. " +
+                "IMPORTANT: Your response MUST be a VALID raw JSON object ONLY, with no markdown formatting blocks, " +
+                "no ```json wrapper, no explanation. " +
+                "The JSON must have the following structure EXACTLY: " +
+                "{\n" +
+                "  \"insight\": \"Báo cáo phân tích tương quan sinh lý & dinh dưỡng chi tiết bằng tiếng Việt bắt đầu bằng một biểu tượng cảm xúc y học (🩺)\",\n" +
+                "  \"status\": \"Lành mạnh / Cần cải thiện / Cảnh báo\"\n" +
+                "}";
+
+        return callGeminiPlain(prompt, () -> getMockCorrelationInsight());
+    }
+
+    private Map<String, Object> callGeminiPlain(String prompt, java.util.function.Supplier<Map<String, Object>> fallbackSupplier) {
+        if (!StringUtils.hasText(geminiApiKey)) {
+            return fallbackSupplier.get();
+        }
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("text", prompt);
+
+        List<Map<String, Object>> parts = Collections.singletonList(textPart);
+
+        Map<String, Object> contentsObject = new HashMap<>();
+        contentsObject.put("parts", parts);
+
+        List<Map<String, Object>> contents = Collections.singletonList(contentsObject);
+
+        Map<String, Object> responseMimeType = new HashMap<>();
+        responseMimeType.put("responseMimeType", "application/json");
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("contents", contents);
+        payload.put("generationConfig", responseMimeType);
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode rootNode = objectMapper.readTree(response.getBody());
+                String responseText = rootNode.path("candidates")
+                        .path(0)
+                        .path("content")
+                        .path("parts")
+                        .path(0)
+                        .path("text")
+                        .asText()
+                        .trim();
+
+                responseText = responseText.replaceAll("^```json\\s*", "");
+                responseText = responseText.replaceAll("\\s*```$", "");
+
+                return objectMapper.readValue(responseText, new TypeReference<Map<String, Object>>() {});
+            } else {
+                return fallbackSupplier.get();
+            }
+        } catch (Exception e) {
+            log.error("Exception during Gemini plain text API call: ", e);
+            return fallbackSupplier.get();
+        }
+    }
+
+    public Map<String, Object> getMockMealPlan(int calorieGoal) {
+        Map<String, Object> mock = new HashMap<>();
+        mock.put("daily_calories", calorieGoal);
+        
+        Map<String, Object> breakfast = new HashMap<>();
+        breakfast.put("name", "Cháo yến mạch chuối và hạt chia");
+        breakfast.put("calories", 380.0);
+        breakfast.put("carbs", 52.0);
+        breakfast.put("protein", 12.0);
+        breakfast.put("fat", 8.0);
+        breakfast.put("description", "Cháo yến mạch ấm nóng kết hợp với chuối chín tự nhiên cung cấp năng lượng giải phóng chậm, hạt chia bổ sung omega-3 và chất xơ tuyệt vời giúp khởi đầu ngày mới tỉnh táo.");
+        mock.put("breakfast", breakfast);
+
+        Map<String, Object> lunch = new HashMap<>();
+        lunch.put("name", "Ức gà áp chảo ăn kèm bông cải xanh và khoai lang luộc");
+        lunch.put("calories", 550.0);
+        lunch.put("carbs", 45.0);
+        lunch.put("protein", 38.0);
+        lunch.put("fat", 11.0);
+        lunch.put("description", "Ức gà áp chảo không dầu mỡ cung cấp đạm tinh khiết giúp hồi phục cơ bắp. Khoai lang luộc giàu tinh bột phức hợp giữ chỉ số đường huyết ổn định và bông cải xanh bổ sung vitamin dồi dào.");
+        mock.put("lunch", lunch);
+
+        Map<String, Object> dinner = new HashMap<>();
+        dinner.put("name", "Cá hồi nướng măng tây và salad bơ");
+        dinner.put("calories", 480.0);
+        dinner.put("carbs", 18.0);
+        dinner.put("protein", 32.0);
+        dinner.put("fat", 22.0);
+        dinner.put("description", "Cá hồi nướng chứa nhiều chất béo có lợi Omega-3 hỗ trợ tim mạch và hệ thần kinh. Măng tây nướng giòn ngọt và salad quả bơ mang lại nguồn chất béo lành mạnh tuyệt vời cho bữa tối nhẹ bụng.");
+        mock.put("dinner", dinner);
+
+        mock.put("advice", "❤️ Hãy uống đủ 2L nước hôm nay và phân chia thời gian ăn đều đặn từ 3-4 tiếng/bữa để duy trì trạng thái trao đổi chất tối ưu nhất nhé!");
+        return mock;
+    }
+
+    public Map<String, Object> getMockCorrelationInsight() {
+        Map<String, Object> mock = new HashMap<>();
+        mock.put("status", "Cần cải thiện");
+        mock.put("insight", "🩺 [Phân tích tương quan AI]: Trong 7 ngày qua, hệ thống nhận thấy lượng muối (natri) từ các bữa ăn ngoài tiệm (như phở bò béo, cơm tấm) tăng vọt trùng khớp với thời điểm cân nặng của bạn tăng nhẹ 0.3kg vào ngày hôm sau, đây là hiện tượng tích nước sinh lý ngắn hạn chứ không phải tăng mỡ thực tế. Đồng thời, những ngày lượng nước uống của bạn giảm xuống dưới 1.2L có mối tương quan trực tiếp đến số giờ ngủ giảm và cảm giác mệt mỏi nhẹ. Điểm sáng là số bước chân đi bộ trung bình của bạn duy trì rất tốt ở mức 7,500 bước/ngày giúp đốt cháy năng lượng tích lũy hiệu quả. Khuyến nghị: Hãy tăng lượng nước lọc uống hàng ngày lên 2L (mỗi cốc 250ml) và cắt giảm nước lèo khi ăn phở để đào thải lượng muối dư thừa và bình ổn cân nặng!");
+        return mock;
+    }
+
+    /**
      * Mock OCR bao bì sản phẩm thông minh
      */
     public Map<String, Object> getMockOcr(String filename) {

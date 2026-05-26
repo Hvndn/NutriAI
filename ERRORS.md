@@ -92,3 +92,40 @@ Tệp tin này ghi lại toàn bộ các lỗi phát sinh trong quá trình phá
 - **Prevention**: Không dùng keyword matching từ filename để chọn ảnh — luôn lưu ảnh thực từ request vào server storage và return URL động.
 - **Status**: Fixed
 
+---
+
+## 2026-05-26 10:45 - Lỗi thiếu ngoặc nhọn đóng phương thức getMockNutrition trong AiService.java
+
+- **Type**: Syntax
+- **Severity**: High
+- **File**: `backend/src/main/java/com/nutriai/api/service/AiService.java:241`
+- **Agent**: thần
+- **Root Cause**: Thiếu dấu đóng ngoặc nhọn `}` kết thúc phương thức `getMockNutrition(String filename)` (và thiếu `return mock;` ở khối switch case mặc định), dẫn đến lỗi biên dịch y-cú-pháp `illegal start of expression` khi bắt đầu khai báo phương thức tiếp theo `generateMealPlan(int calorieGoal)`.
+- **Error Message**: 
+  ```
+  [ERROR] /app/src/main/java/com/nutriai/api/service/AiService.java:[245,5] illegal start of expression
+  [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project api: Compilation failure
+  ```
+- **Fix Applied**: Bổ sung `return mock;` và đóng ngoặc nhọn `}` chuẩn xác cho phương thức `getMockNutrition` trước phương thức `generateMealPlan`.
+- **Prevention**: Luôn đảm bảo đóng mở ngoặc nhọn chuẩn xác cho mọi phương thức. Sử dụng bộ đếm đóng ngoặc hoặc format code tự động trước khi commit để tránh lỗi cú pháp cơ bản.
+- **Status**: Fixed
+
+---
+
+## 2026-05-26 10:50 - Lỗi ép kiểu generic không tương thích của Map.of trong HealthLogService.java
+
+- **Type**: Syntax
+- **Severity**: High
+- **File**: `backend/src/main/java/com/nutriai/api/service/HealthLogService.java:103,114`
+- **Agent**: thần
+- **Root Cause**: Hàm `Map.of(...)` suy luận kiểu dữ liệu động, làm kiểu gán về `Map<String, ? extends Object & Serializable & ...>` không thể chuyển đổi trực tiếp sang kiểu bất biến `Map<String, Object>` trong khai báo danh sách `List<Map<String, Object>> mappedScans`.
+- **Error Message**: 
+  ```
+  [ERROR] /app/src/main/java/com/nutriai/api/service/HealthLogService.java:[110,22] incompatible types: java.util.List<java.util.Map<java.lang.String,java.lang.Object&java.io.Serializable&...>> cannot be converted to java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+  ```
+- **Fix Applied**: Sử dụng chỉ định kiểu generic tường minh `Map.<String, Object>of(...)` khi khởi tạo các Map con trong biểu thức Stream, giúp ép kiểu Value về `Object` ngay từ đầu và gán thành công cho danh sách `List<Map<String, Object>>`.
+- **Prevention**: Trong các biểu thức Stream của Java, khi map dữ liệu với kiểu hỗn hợp (String, Double, Integer) sử dụng `Map.of(...)`, hãy luôn ưu tiên chỉ định kiểu generic tường minh `Map.<String, Object>of(...)` để tránh lỗi suy luận kiểu (type inference) phức tạp của Java compiler.
+- **Status**: Fixed
+
+
+

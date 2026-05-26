@@ -60,6 +60,10 @@ interface AppState {
   error: string | null;
   language: 'vi' | 'en';
   theme: 'light' | 'dark';
+  todayHealthLog: any | null;
+  healthHistory: any[];
+  aiCorrelation: any | null;
+  aiMealPlan: any | null;
   
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
@@ -77,6 +81,11 @@ interface AppState {
   setLanguage: (lang: 'vi' | 'en') => void;
   toggleTheme: () => void;
   initTheme: () => void;
+  fetchTodayHealthLog: () => Promise<void>;
+  saveHealthLog: (request: { weight?: number; waterMl?: number; steps?: number; sleepHours?: number }) => Promise<void>;
+  fetchHealthHistory: () => Promise<void>;
+  fetchAICorrelation: () => Promise<void>;
+  fetchAIMealPlan: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -89,6 +98,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   language: typeof window !== 'undefined' ? (localStorage.getItem('lang') as 'vi' | 'en' || 'vi') : 'vi',
   theme: typeof window !== 'undefined' ? (localStorage.getItem('theme') as 'light' | 'dark' || 'dark') : 'dark',
+  todayHealthLog: null,
+  healthHistory: [],
+  aiCorrelation: null,
+  aiMealPlan: null,
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
@@ -138,7 +151,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    set({ user: null, token: null, dailyTracker: null, history: [], adminStats: null });
+    set({ 
+      user: null, 
+      token: null, 
+      dailyTracker: null, 
+      history: [], 
+      adminStats: null,
+      todayHealthLog: null,
+      healthHistory: [],
+      aiCorrelation: null,
+      aiMealPlan: null
+    });
   },
 
   fetchMe: async () => {
@@ -296,6 +319,54 @@ export const useAppStore = create<AppState>((set, get) => ({
         root.classList.remove('dark');
       }
       set({ theme: savedTheme });
+    }
+  },
+
+  fetchTodayHealthLog: async () => {
+    try {
+      const response = await api.get('/health-logs/today');
+      set({ todayHealthLog: response.data });
+    } catch (err) {}
+  },
+
+  saveHealthLog: async (request) => {
+    try {
+      const response = await api.post('/health-logs/', request);
+      set({ todayHealthLog: response.data });
+      get().fetchHealthHistory();
+    } catch (err) {}
+  },
+
+  fetchHealthHistory: async () => {
+    try {
+      const response = await api.get('/health-logs/history');
+      set({ healthHistory: response.data });
+    } catch (err) {}
+  },
+
+  fetchAICorrelation: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get('/health-logs/ai-correlation');
+      set({ aiCorrelation: response.data, isLoading: false });
+    } catch (err: any) {
+      set({ 
+        isLoading: false, 
+        error: err.response?.data?.detail || 'Lỗi phân tích tương quan AI.' 
+      });
+    }
+  },
+
+  fetchAIMealPlan: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get('/scans/meal-planner');
+      set({ aiMealPlan: response.data, isLoading: false });
+    } catch (err: any) {
+      set({ 
+        isLoading: false, 
+        error: err.response?.data?.detail || 'Lỗi tải thực đơn gợi ý AI.' 
+      });
     }
   }
 }));
