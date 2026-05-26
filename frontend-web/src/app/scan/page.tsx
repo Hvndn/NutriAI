@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/services/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Upload, RefreshCw, Heart, Info, ArrowLeft, Plus, CheckCircle, Flame, PieChart, ShieldAlert, Sparkles } from 'lucide-react';
@@ -9,8 +9,11 @@ import GlassCard from '@/components/GlassCard';
 import ScanLine from '@/components/ScanLine';
 import api from '@/services/api';
 
-export default function ScanPage() {
+function ScanPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resultId = searchParams.get('resultId');
+
   const { token, uploadAndAnalyzeImage, uploadAndOcrPackaging, isLoading, error } = useAppStore();
   
   const [scanMode, setScanMode] = useState<'food' | 'ocr'>('food');
@@ -18,6 +21,43 @@ export default function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<any | null>(null);
   const [ocrResult, setOcrResult] = useState<any | null>(null);
+
+  // Tải chi tiết bản quét cũ nếu có resultId
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (resultId) {
+        try {
+          const response = await api.get(`/scans/${resultId}`);
+          const result = response.data;
+          setScanResult(result);
+          setScanMode('food');
+          if (result.image_url) {
+            // Chuẩn hóa đường dẫn ảnh từ backend
+            const getImageUrl = (url: string | null) => {
+              if (!url) return null;
+              if (url.startsWith('http')) return url;
+              const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+              return `${API_URL}${url}`;
+            };
+            setPreviewUrl(getImageUrl(result.image_url));
+          }
+          setEditForm({
+            food_name: result.food_name,
+            calories: result.calories,
+            carbs: result.carbs,
+            protein: result.protein,
+            fat: result.fat,
+            weight_grams: result.weight_grams,
+            health_score: result.health_score,
+            health_advice: result.health_advice || ''
+          });
+        } catch (err) {
+          console.error("Không thể tải chi tiết lượt quét thực phẩm:", err);
+        }
+      }
+    };
+    fetchDetail();
+  }, [resultId]);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   
   // States cho chỉnh sửa thủ công & thêm nguyên liệu
@@ -341,7 +381,7 @@ export default function ScanPage() {
               </ul>
             </div>
             
-            {previewUrl && (
+            {previewUrl && !resultId && (
               <button
                 onClick={handleScan}
                 className="w-full py-4 bg-premium-green hover:bg-premium-green/85 text-white font-black rounded-2xl shadow-glow transition hover:scale-102 mt-8 flex items-center justify-center gap-2"
@@ -383,10 +423,10 @@ export default function ScanPage() {
               </div>
               
               <button
-                onClick={() => { setScanResult(null); setPreviewUrl(null); setSelectedFile(null); }}
+                onClick={() => { setScanResult(null); setPreviewUrl(null); setSelectedFile(null); if (resultId) router.push('/dashboard'); }}
                 className="w-full py-3 bg-premium-border/40 hover:bg-premium-border/60 text-gray-300 font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 border border-premium-border/20"
               >
-                <RefreshCw className="w-4 h-4" /> Quét món ăn khác
+                <RefreshCw className="w-4 h-4" /> {resultId ? 'Trở lại Dashboard' : 'Quét món ăn khác'}
               </button>
             </div>
 
@@ -698,5 +738,18 @@ export default function ScanPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-12 max-w-4xl mx-auto flex flex-col gap-6">
+        <SkeletonLoader variant="rect" className="h-12 w-1/3" />
+        <SkeletonLoader variant="rect" className="h-64" />
+      </div>
+    }>
+      <ScanPageContent />
+    </Suspense>
   );
 }

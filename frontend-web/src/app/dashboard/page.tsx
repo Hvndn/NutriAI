@@ -427,7 +427,11 @@ export default function DashboardPage() {
                     'text-red-500 bg-red-500/10';
 
                   return (
-                    <div key={scan.id} className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 p-3 bg-premium-border/10 rounded-2xl border border-premium-border/20 hover:border-premium-border/40 transition-all">
+                    <div 
+                      key={scan.id} 
+                      onClick={() => router.push(`/scan?resultId=${scan.id}`)}
+                      className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 p-3 bg-premium-border/10 rounded-2xl border border-premium-border/20 hover:border-premium-border/40 transition-all cursor-pointer hover:bg-premium-border/15"
+                    >
                       <div className="flex items-center gap-3">
                         {scan.image_url ? (
                           <img 
@@ -465,7 +469,8 @@ export default function DashboardPage() {
                         </span>
 
                         <button
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             if (confirm(`Bạn có chắc chắn muốn xóa lượt quét món "${scan.food_name}" này khỏi lịch sử?`)) {
                               await deleteScan(scan.id);
                             }
