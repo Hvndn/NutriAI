@@ -82,8 +82,8 @@ jobs:
 
       - name: Deploy to Railway
         run: |
-          echo "🚀 Deploying Backend (NutriAI)..."
-          cd backend && railway up --detach --service NutriAI && cd ..
+          echo "🚀 Deploying Backend (backend)..."
+          cd backend && railway up --detach --service backend && cd ..
           
           echo "🚀 Deploying Frontend (frontend)..."
           cd frontend-web && railway up --detach --service frontend && cd ..
