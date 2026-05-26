@@ -1,16 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '@/services/store';
-import { Camera, LayoutDashboard, History, ShieldAlert, LogOut, Menu, X, Apple, Globe } from 'lucide-react';
+import { Camera, LayoutDashboard, History, ShieldAlert, LogOut, Menu, X, Apple, Globe, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { user, logout, language, setLanguage } = useAppStore();
+  const { user, logout, language, setLanguage, theme, toggleTheme, initTheme } = useAppStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   const handleLogout = () => {
     logout();
@@ -99,6 +103,20 @@ export const Navbar: React.FC = () => {
               {language === 'vi' ? 'VI 🇻🇳' : 'EN 🇬🇧'}
             </button>
 
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 bg-premium-border/30 hover:bg-premium-border/50 text-gray-300 hover:text-white rounded-xl border border-premium-border/30 transition-all text-xs font-black flex items-center gap-1.5"
+              title={theme === 'dark' ? 'Chuyển sang Giao diện Sáng' : 'Chuyển sang Giao diện Tối'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-500" />
+              )}
+              <span className="text-[10px] uppercase font-black">{theme === 'dark' ? 'DARK' : 'LIGHT'}</span>
+            </button>
+
             {user ? (
               <>
                 <div className="flex flex-col items-end">
@@ -136,6 +154,18 @@ export const Navbar: React.FC = () => {
               className="p-2 bg-premium-border/30 text-gray-300 rounded-xl border border-premium-border/30 text-xs font-black flex items-center gap-1"
             >
               {language === 'vi' ? 'VI' : 'EN'}
+            </button>
+            {/* Theme Toggle Mobile */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 bg-premium-border/30 text-gray-300 rounded-xl border border-premium-border/30 flex items-center justify-center"
+              title="Đổi giao diện / Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-500" />
+              )}
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}

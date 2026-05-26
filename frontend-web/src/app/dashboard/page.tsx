@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Camera, Edit2, Flame, Award, Apple, ChevronRight, Activity, Sparkles, Download, Trash2, Calendar, TrendingUp } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import DailyRing from '@/components/DailyRing';
-import SkeletonLoader from '@/components/SkeletonLoader';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function DashboardPage() {
   const router = useRouter();

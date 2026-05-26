@@ -6,7 +6,7 @@ import { useAppStore } from '@/services/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Calendar, Flame, Eye, Trash2, ArrowRight, Camera, Sparkles } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
-import SkeletonLoader from '@/components/SkeletonLoader';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function HistoryPage() {
   const router = useRouter();

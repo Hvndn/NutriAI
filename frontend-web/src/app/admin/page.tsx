@@ -6,7 +6,7 @@ import { useAppStore } from '@/services/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Camera, Flame, ShieldAlert, Award, ToggleLeft, ToggleRight, Trash2, Calendar, Sparkles } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
-import SkeletonLoader from '@/components/SkeletonLoader';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 import api from '@/services/api';
 
 export default function AdminPage() {

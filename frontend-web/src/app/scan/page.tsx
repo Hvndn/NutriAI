@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Upload, RefreshCw, Heart, Info, ArrowLeft, Plus, CheckCircle, Flame, PieChart, ShieldAlert, Sparkles } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import ScanLine from '@/components/ScanLine';
-import SkeletonLoader from '@/components/SkeletonLoader';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 import api from '@/services/api';
 
 function ScanPageContent() {

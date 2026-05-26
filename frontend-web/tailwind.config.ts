@@ -15,9 +15,9 @@ const config: Config = {
         premium: {
           green: '#10B981',      // Emerald Vivid Green
           lime: '#84CC16',       // Lime
-          dark: '#0B0F19',       // Deep Space Black
-          card: '#151C2C',       // Modern Glass Card
-          border: '#233044',     // Subtle Border
+          dark: 'rgba(var(--premium-dark), <alpha-value>)',
+          card: 'rgba(var(--premium-card), <alpha-value>)',
+          border: 'rgba(var(--premium-border), <alpha-value>)',
           accent: '#3B82F6',     // Electric Blue
           rose: '#F43F5E',       // Soft Heart Rose
         }
@@ -29,7 +29,7 @@ const config: Config = {
         xs: '2px',
       },
       boxShadow: {
-        'premium': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+        'premium': 'var(--premium-shadow)',
         'glow': '0 0 15px 2px rgba(16, 185, 129, 0.4)',
         'glow-blue': '0 0 15px 2px rgba(59, 130, 246, 0.4)',
       }

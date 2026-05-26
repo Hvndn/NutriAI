@@ -59,6 +59,7 @@ interface AppState {
   isLoading: boolean;
   error: string | null;
   language: 'vi' | 'en';
+  theme: 'light' | 'dark';
   
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
@@ -73,6 +74,8 @@ interface AppState {
   updateDailyGoal: (goal: number) => Promise<void>;
   deleteScan: (id: number) => Promise<void>;
   setLanguage: (lang: 'vi' | 'en') => void;
+  toggleTheme: () => void;
+  initTheme: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -84,6 +87,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   isLoading: false,
   error: null,
   language: typeof window !== 'undefined' ? (localStorage.getItem('lang') as 'vi' | 'en' || 'vi') : 'vi',
+  theme: typeof window !== 'undefined' ? (localStorage.getItem('theme') as 'light' | 'dark' || 'dark') : 'dark',
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
@@ -245,5 +249,32 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.setItem('lang', lang);
     }
     set({ language: lang });
+  },
+
+  toggleTheme: () => {
+    const nextTheme = get().theme === 'light' ? 'dark' : 'light';
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', nextTheme);
+      const root = window.document.documentElement;
+      if (nextTheme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    }
+    set({ theme: nextTheme });
+  },
+
+  initTheme: () => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'dark';
+      const root = window.document.documentElement;
+      if (savedTheme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      set({ theme: savedTheme });
+    }
   }
 }));
