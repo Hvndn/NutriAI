@@ -82,30 +82,11 @@ jobs:
 
       - name: Deploy to Railway
         run: |
-          echo "🔎 Fetching project status from Railway..."
-          STATUS_OUTPUT=$(railway status)
-          echo "================ STATUS ================"
-          echo "$STATUS_OUTPUT"
-          echo "========================================"
+          echo "🚀 Deploying Backend (NutriAI)..."
+          cd backend && railway up --detach --service NutriAI && cd ..
           
-          # Deploy backend nếu tìm thấy
-          if echo "$STATUS_OUTPUT" | grep -qi "backend"; then
-            echo "🚀 Deploying Backend..."
-            cd backend && railway up --detach --service backend && cd ..
-          else
-            echo "⚠️ Backend service not found in Railway project status."
-          fi
-          
-          # Deploy frontend nếu tìm thấy
-          if echo "$STATUS_OUTPUT" | grep -qi "frontend-web"; then
-            echo "🚀 Deploying Frontend (frontend-web)..."
-            cd frontend-web && railway up --detach --service frontend-web && cd ..
-          elif echo "$STATUS_OUTPUT" | grep -qi "frontend"; then
-            echo "🚀 Deploying Frontend (frontend)..."
-            cd frontend-web && railway up --detach --service frontend && cd ..
-          else
-            echo "ℹ️ Frontend service (frontend-web or frontend) not found in Railway project status."
-          fi
+          echo "🚀 Deploying Frontend (frontend)..."
+          cd frontend-web && railway up --detach --service frontend && cd ..
           
           echo "✅ Deploy commands triggered successfully!"
         env:
