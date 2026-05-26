@@ -61,6 +61,36 @@ function ScanPageContent() {
   }, [resultId]);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   
+  // Portion size scaling states & actions
+  const [portionSize, setPortionSize] = useState<number>(100);
+
+  useEffect(() => {
+    if (scanResult) {
+      setPortionSize(scanResult.weight_grams);
+    }
+  }, [scanResult]);
+
+  const factor = scanResult ? portionSize / scanResult.weight_grams : 1;
+
+  const handleUpdatePortion = async () => {
+    if (!scanResult) return;
+    try {
+      const scaledForm = {
+        food_name: scanResult.food_name,
+        calories: Math.round(scanResult.calories * factor),
+        carbs: Math.round(scanResult.carbs * factor * 10) / 10,
+        protein: Math.round(scanResult.protein * factor * 10) / 10,
+        fat: Math.round(scanResult.fat * factor * 10) / 10,
+        weight_grams: portionSize,
+        health_score: scanResult.health_score,
+        health_advice: scanResult.health_advice || ''
+      };
+      const response = await api.put(`/scans/${scanResult.id}`, scaledForm);
+      setScanResult(response.data);
+      alert("Đã cập nhật chỉ số dinh dưỡng theo khẩu phần ăn thực tế!");
+    } catch (err) {}
+  };
+
   // States cho chỉnh sửa thủ công & thêm nguyên liệu
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -505,19 +535,53 @@ function ScanPageContent() {
                 <div className="grid grid-cols-4 gap-3 mt-2">
                   <div className="bg-premium-border/30 p-3 rounded-2xl text-center border border-premium-border/20">
                     <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Calories</span>
-                    <span className="text-base font-black text-white mt-1 block">{scanResult.calories} kcal</span>
+                    <span className="text-base font-black text-white mt-1 block">{Math.round(scanResult.calories * factor)} kcal</span>
                   </div>
                   <div className="bg-premium-border/30 p-3 rounded-2xl text-center border border-premium-border/20">
                     <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Tinh bột</span>
-                    <span className="text-base font-black text-white mt-1 block">{scanResult.carbs}g</span>
+                    <span className="text-base font-black text-white mt-1 block">{Math.round(scanResult.carbs * factor * 10) / 10}g</span>
                   </div>
                   <div className="bg-premium-border/30 p-3 rounded-2xl text-center border border-premium-border/20">
                     <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Chất đạm</span>
-                    <span className="text-base font-black text-white mt-1 block">{scanResult.protein}g</span>
+                    <span className="text-base font-black text-white mt-1 block">{Math.round(scanResult.protein * factor * 10) / 10}g</span>
                   </div>
                   <div className="bg-premium-border/30 p-3 rounded-2xl text-center border border-premium-border/20">
                     <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Chất béo</span>
-                    <span className="text-base font-black text-white mt-1 block">{scanResult.fat}g</span>
+                    <span className="text-base font-black text-white mt-1 block">{Math.round(scanResult.fat * factor * 10) / 10}g</span>
+                  </div>
+                </div>
+
+                {/* Portion Size Slider (Brainstorm Idea 1 implemented!) */}
+                <div className="bg-premium-border/20 p-4.5 rounded-2xl border border-premium-border/30 mt-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-center text-xs font-bold">
+                    <span className="text-gray-400">Khẩu phần ăn thực tế (Portion Size):</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-premium-green bg-premium-green/10 px-2 py-0.5 rounded-lg border border-premium-green/20">
+                        {portionSize}g (x{factor.toFixed(2)})
+                      </span>
+                      {portionSize !== scanResult.weight_grams && (
+                        <button
+                          onClick={handleUpdatePortion}
+                          className="px-2 py-0.5 bg-premium-green hover:bg-premium-green/85 text-white font-extrabold text-[10px] rounded-lg transition shadow-glow"
+                        >
+                          Lưu Khẩu Phần
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={Math.round(scanResult.weight_grams * 0.3)}
+                    max={Math.round(scanResult.weight_grams * 3)}
+                    step={10}
+                    value={portionSize}
+                    onChange={(e) => setPortionSize(Number(e.target.value))}
+                    className="w-full h-2 bg-premium-border/40 rounded-lg appearance-none cursor-pointer accent-premium-green"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500 font-bold">
+                    <span>Khẩu phần nhỏ ({Math.round(scanResult.weight_grams * 0.3)}g)</span>
+                    <span>Khẩu phần chuẩn ({scanResult.weight_grams}g)</span>
+                    <span>Khẩu phần lớn ({Math.round(scanResult.weight_grams * 3)}g)</span>
                   </div>
                 </div>
               </GlassCard>

@@ -201,6 +201,43 @@ public class ScanService {
                 .build();
     }
 
+    @Transactional
+    public ScanDto duplicateScan(Long id, Long userId) {
+        Scan scan = scanRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lượt quét thực phẩm cần sao chép"));
+
+        Scan newScan = Scan.builder()
+                .user(scan.getUser())
+                .imageUrl(scan.getImageUrl())
+                .foodName(scan.getFoodName() + " (Ăn lại)")
+                .calories(scan.getCalories())
+                .carbs(scan.getCarbs())
+                .protein(scan.getProtein())
+                .fat(scan.getFat())
+                .weightGrams(scan.getWeightGrams())
+                .healthScore(scan.getHealthScore())
+                .healthAdvice(scan.getHealthAdvice())
+                .build();
+
+        Scan savedScan = scanRepository.save(newScan);
+
+        // Sao chép các ingredients sang lượt quét mới
+        if (scan.getIngredients() != null) {
+            for (FoodDetail ing : scan.getIngredients()) {
+                FoodDetail newIng = FoodDetail.builder()
+                        .scan(savedScan)
+                        .ingredientName(ing.getIngredientName())
+                        .amount(ing.getAmount())
+                        .isHealthy(ing.getIsHealthy())
+                        .build();
+                foodDetailRepository.save(newIng);
+                savedScan.getIngredients().add(newIng);
+            }
+        }
+
+        return convertToDto(savedScan);
+    }
+
     public ScanDto convertToDto(Scan scan) {
         List<FoodDetailDto> ingDtos = scan.getIngredients().stream()
                 .map(ing -> FoodDetailDto.builder()

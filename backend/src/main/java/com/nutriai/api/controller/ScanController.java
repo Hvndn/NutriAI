@@ -111,6 +111,16 @@ public class ScanController {
         return ResponseEntity.ok(Map.of("message", "Đã xóa lịch sử quét thực phẩm thành công."));
     }
 
+    @PostMapping("/{id}/duplicate")
+    @Operation(summary = "Ăn lại món cũ: Sao chép một lượt quét cũ vào ngày hôm nay")
+    public ResponseEntity<ScanDto> duplicateScan(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        ScanDto duplicated = scanService.duplicateScan(id, currentUser.getId());
+        return new ResponseEntity<>(duplicated, HttpStatus.CREATED);
+    }
+
     @PostMapping("/{id}/ingredients")
     @Operation(summary = "Thêm thủ công một nguyên liệu mới vào đĩa thức ăn đã quét")
     public ResponseEntity<FoodDetailDto> addIngredient(

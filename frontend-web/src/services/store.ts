@@ -73,6 +73,7 @@ interface AppState {
   uploadAndOcrPackaging: (file: File) => Promise<any | null>;
   updateDailyGoal: (goal: number) => Promise<void>;
   deleteScan: (id: number) => Promise<void>;
+  duplicateScan: (id: number) => Promise<boolean>;
   setLanguage: (lang: 'vi' | 'en') => void;
   toggleTheme: () => void;
   initTheme: () => void;
@@ -242,6 +243,26 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
       await get().fetchDailyTracker();
     } catch (err) {}
+  },
+
+  duplicateScan: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/scans/${id}/duplicate`);
+      const newScan = response.data;
+      set((state) => ({
+        history: [newScan, ...state.history],
+        isLoading: false
+      }));
+      await get().fetchDailyTracker();
+      return true;
+    } catch (err: any) {
+      set({ 
+        isLoading: false, 
+        error: err.response?.data?.detail || 'Lỗi sao chép món ăn.' 
+      });
+      return false;
+    }
   },
 
   setLanguage: (lang) => {

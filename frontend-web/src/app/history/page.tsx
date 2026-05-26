@@ -4,13 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/services/store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Calendar, Flame, Eye, Trash2, ArrowRight, Camera, Sparkles } from 'lucide-react';
+import { Search, Calendar, Flame, Eye, Trash2, ArrowRight, Camera, Sparkles, Plus } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 export default function HistoryPage() {
   const router = useRouter();
-  const { token, history, fetchHistory, deleteScan, isLoading } = useAppStore();
+  const { token, history, fetchHistory, deleteScan, duplicateScan, isLoading } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -31,6 +31,18 @@ export default function HistoryPage() {
     e.stopPropagation(); // Ngăn sự kiện click card dẫn tới xem chi tiết
     if (confirm("Bạn có chắc chắn muốn xóa bản ghi quét thực phẩm này khỏi lịch sử không?")) {
       await deleteScan(id);
+    }
+  };
+
+  const handleDuplicate = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn sự kiện click card dẫn tới xem chi tiết
+    if (confirm("Bạn có muốn ghi nhận lại món ăn này cho bữa ăn ngày hôm nay không?")) {
+      const success = await duplicateScan(id);
+      if (success) {
+        alert("Đã ghi nhận bữa ăn thành công! Lịch sử và chỉ số calo hôm nay đã được cập nhật.");
+      } else {
+        alert("Không thể ghi nhận bữa ăn. Vui lòng thử lại.");
+      }
     }
   };
 
@@ -124,6 +136,14 @@ export default function HistoryPage() {
 
                 {/* Right: Actions */}
                 <div className="flex gap-2 self-end sm:self-auto">
+                  <button
+                    onClick={(e) => handleDuplicate(scan.id, e)}
+                    className="p-2.5 bg-premium-green/10 hover:bg-premium-green/20 text-premium-green rounded-xl border border-premium-green/30 transition-all flex items-center justify-center gap-1.5 px-3.5"
+                    title="Ăn lại món này (Ghi nhận cho ngày hôm nay)"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="text-xs font-extrabold">Ăn lại</span>
+                  </button>
                   <button
                     onClick={(e) => handleDelete(scan.id, e)}
                     className="p-2.5 bg-premium-border/40 hover:bg-premium-rose/10 text-gray-500 hover:text-premium-rose rounded-xl border border-premium-border/20 transition-all"
