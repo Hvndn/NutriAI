@@ -63,6 +63,9 @@ jobs:
 
   # ─────────────────────────────────────────
   # JOB 3: Deploy to Railway Cloud
+  # NOTE: RAILWAY_TOKEN phải là PROJECT TOKEN
+  # Lấy tại: Railway Dashboard → Project → Settings → Tokens → Create token
+  # KHÔNG dùng Account token từ railway.com/account/tokens
   # ─────────────────────────────────────────
   deploy-to-railway:
     name: Auto Deploy to Railway Cloud
@@ -77,21 +80,12 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli@latest
 
-      - name: Verify Railway Token
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "❌ ERROR: RAILWAY_TOKEN secret is not set in GitHub repository settings!"
-            echo "Go to: Settings → Secrets → Actions → New repository secret"
-            echo "Name: RAILWAY_TOKEN"
-            echo "Value: Get from https://railway.com/account/tokens"
-            exit 1
-          fi
-          echo "✅ RAILWAY_TOKEN is configured"
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
       - name: Deploy to Railway
-        run: railway up --detach --service backend
+        run: |
+          echo "🚀 Deploying to Railway Cloud..."
+          railway up --detach
+          echo "✅ Deploy command sent!"
         env:
+          # ⚠️  QUAN TRỌNG: Đây phải là PROJECT TOKEN
+          # Vào: Railway Dashboard → Project 93c06c93 → Settings → Tokens → Create Token
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
