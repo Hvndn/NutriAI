@@ -91,7 +91,7 @@ jobs:
           # Deploy backend nếu tìm thấy
           if echo "$STATUS_OUTPUT" | grep -qi "backend"; then
             echo "🚀 Deploying Backend..."
-            railway up --detach --service backend
+            cd backend && railway up --detach --service backend && cd ..
           else
             echo "⚠️ Backend service not found in Railway project status."
           fi
@@ -99,10 +99,10 @@ jobs:
           # Deploy frontend nếu tìm thấy
           if echo "$STATUS_OUTPUT" | grep -qi "frontend-web"; then
             echo "🚀 Deploying Frontend (frontend-web)..."
-            railway up --detach --service frontend-web
+            cd frontend-web && railway up --detach --service frontend-web && cd ..
           elif echo "$STATUS_OUTPUT" | grep -qi "frontend"; then
             echo "🚀 Deploying Frontend (frontend)..."
-            railway up --detach --service frontend
+            cd frontend-web && railway up --detach --service frontend && cd ..
           else
             echo "ℹ️ Frontend service (frontend-web or frontend) not found in Railway project status."
           fi
