@@ -12,6 +12,9 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Nhận biến build-arg truyền từ Railway để Next.js inline khi build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Next.js yêu cầu biến môi trường khi build
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
