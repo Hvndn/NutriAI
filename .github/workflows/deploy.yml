@@ -82,10 +82,31 @@ jobs:
 
       - name: Deploy to Railway
         run: |
-          echo "🚀 Deploying to Railway Cloud..."
-          railway up --detach
-          echo "✅ Deploy command sent!"
+          echo "🔎 Fetching project status from Railway..."
+          STATUS_OUTPUT=$(railway status)
+          echo "================ STATUS ================"
+          echo "$STATUS_OUTPUT"
+          echo "========================================"
+          
+          # Deploy backend nếu tìm thấy
+          if echo "$STATUS_OUTPUT" | grep -qi "backend"; then
+            echo "🚀 Deploying Backend..."
+            railway up --detach --service backend
+          else
+            echo "⚠️ Backend service not found in Railway project status."
+          fi
+          
+          # Deploy frontend nếu tìm thấy
+          if echo "$STATUS_OUTPUT" | grep -qi "frontend-web"; then
+            echo "🚀 Deploying Frontend (frontend-web)..."
+            railway up --detach --service frontend-web
+          elif echo "$STATUS_OUTPUT" | grep -qi "frontend"; then
+            echo "🚀 Deploying Frontend (frontend)..."
+            railway up --detach --service frontend
+          else
+            echo "ℹ️ Frontend service (frontend-web or frontend) not found in Railway project status."
+          fi
+          
+          echo "✅ Deploy commands triggered successfully!"
         env:
-          # ⚠️  QUAN TRỌNG: Đây phải là PROJECT TOKEN
-          # Vào: Railway Dashboard → Project 93c06c93 → Settings → Tokens → Create Token
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
