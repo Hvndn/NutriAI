@@ -124,8 +124,26 @@ Tệp tin này ghi lại toàn bộ các lỗi phát sinh trong quá trình phá
   [ERROR] /app/src/main/java/com/nutriai/api/service/HealthLogService.java:[110,22] incompatible types: java.util.List<java.util.Map<java.lang.String,java.lang.Object&java.io.Serializable&...>> cannot be converted to java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
   ```
 - **Fix Applied**: Sử dụng chỉ định kiểu generic tường minh `Map.<String, Object>of(...)` khi khởi tạo các Map con trong biểu thức Stream, giúp ép kiểu Value về `Object` ngay từ đầu và gán thành công cho danh sách `List<Map<String, Object>>`.
-- **Prevention**: Trong các biểu thức Stream của Java, khi map dữ liệu với kiểu hỗn hợp (String, Double, Integer) sử dụng `Map.of(...)`, hãy luôn ưu tiên chỉ định kiểu generic tường minh `Map.<String, Object>of(...)` để tránh lỗi suy luận kiểu (type inference) phức tạp của Java compiler.
+- **Prevention**: Trong các biểu thức Stream của Java, khi map dữ liệu với kiểu hỗn hợp (String, Double, Investment) sử dụng `Map.of(...)`, hãy luôn ưu tiên chỉ định kiểu generic tường minh `Map.<String, Object>of(...)` để tránh lỗi suy luận kiểu (type inference) phức tạp của Java compiler.
 - **Status**: Fixed
+
+---
+
+## 2026-05-26 10:58 - Lỗi GitHub Actions Build fail do thiếu package-lock.json khi cấu hình Node cache
+
+- **Type**: Process
+- **Severity**: Medium
+- **File**: `.github/workflows/deploy.yml:43-44`
+- **Agent**: thần
+- **Root Cause**: Tập tin cấu hình GitHub Actions cấu hình thuộc tính `cache: 'npm'` và chỉ định đường dẫn lockfile `cache-dependency-path: frontend-web/package-lock.json`. Tuy nhiên, dự án không duy trì tập tin `package-lock.json` trong Git repository, dẫn đến lỗi đỏ ngay lập tức ở bước cài đặt môi trường Node.js.
+- **Error Message**: 
+  ```
+  Build Frontend (Next.js 15): Some specified paths were not resolved, unable to cache dependencies.
+  ```
+- **Fix Applied**: Loại bỏ thuộc tính cấu hình cache và đường dẫn dependency lockfile trong bước Setup Node.js ở tệp `deploy.yml`. Hệ thống sẽ tự cài dependencies thuần thông qua `package.json` mà không tìm kiếm lockfile.
+- **Prevention**: Khi cấu hình cache trong các workflow GitHub Actions, chỉ kích hoạt cache lockfile (`package-lock.json`, `yarn.lock`) nếu lockfile đó thực sự được commit và duy trì trong Git repository.
+- **Status**: Fixed
+
 
 
 
