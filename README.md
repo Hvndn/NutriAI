@@ -1,5 +1,4 @@
-# AI Nutrition Scanner 🍎 (DATN 2026)
-
+# AI Nutrition Scanner 🍎 
 Ứng dụng quét và phân tích dinh dưỡng thực phẩm thông minh đa nền tảng sử dụng công nghệ AI tiên tiến, mang lại trải nghiệm phân tích Calories, Carbs, Protein, Fat, điểm sức khỏe Healthy Score và quét bao bì OCR trực quan chỉ từ hình ảnh hoặc camera thời gian thực.
 
 Dự án đã được tái cấu trúc toàn diện sang **Spring Boot 3** (LTS Java 21) cho phần Backend, mang lại hiệu năng đỉnh cao, tính bảo mật tối đa và khả năng mở rộng quy mô chuẩn doanh nghiệp.
@@ -117,4 +116,3 @@ Khi bạn đẩy mã nguồn lên nhánh `main` (hoặc merge PR):
 
 ---
 
-*Phát triển bởi Đồ Án Tốt Nghiệp (DATN) - Hệ thống AI Dinh dưỡng Thế hệ mới 2026.*
